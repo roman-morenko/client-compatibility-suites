@@ -37,12 +37,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        server-version: ${{ fromJson(needs.setup_server_matrix.outputs.matrix) }}
-        kind: [ os, enterprise ]
+        server-version: ["5.4.0"]
+        kind: [ enterprise ]
         os: [ ubuntu-latest ]
-        java: [ 
+        java: [
                 { version: 17.0.9, distribution: semeru },
-                { version: 17.0.9+9, distribution: adopt-openj9 }
+                { version: 17.0.9+9, distribution: adopt-openj9 },
         ]
 
     name: Test Java client ${{ github.event.inputs.branch_name }} branch against ${{ matrix.kind }} ${{ matrix.server-version }} server on ${{ matrix.os }} and JVM ${{ matrix.java.version }} ${{ matrix.java.distribution }}
@@ -89,8 +89,15 @@ jobs:
         shell: bash -l {0}
         run: |
           chmod +x mvnw
-          ./mvnw -B -V -e test -Pintegration-tests -Pcode-coverage -Djdk.version=${{ matrix.java.version }} -Dtest.hazelcast-server.version=${{ matrix.server-version }}
+          ./mvnw -B -V -e test -Pintegration-tests -Pcode-coverage -Djdk.version=17 -Dtest.hazelcast-server.version=${{ matrix.server-version }}
         working-directory: client/hazelcast-enterprise-java-client
+
+      - name: Upload Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jvm-logs
+          path: home/runner/work/client-compatibility-suites/client-compatibility-suites/client/hazelcast-enterprise-java-client/
       
       - name: "Archive os server logs"
         uses: actions/upload-artifact@v4

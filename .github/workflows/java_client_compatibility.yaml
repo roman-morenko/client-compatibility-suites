@@ -83,7 +83,15 @@ jobs:
         if: ${{ matrix.kind == 'enterprise' }}
         run: |
           echo "HZ_LICENSEKEY=${{ '>' == steps.version.outputs.comparison-result && secrets.HAZELCAST_ENTERPRISE_KEY || secrets.HAZELCAST_ENTERPRISE_KEY_V5 }}" >> $GITHUB_ENV
+      
+      - name: Build OS
+        shell: bash -l {0}
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -V -e clean install -Pintegration-tests -DskipTests -Djdk.version=17 -Dtest.hazelcast-server.version=${{ matrix.server-version }}
+        working-directory: client/hazelcast-java-client
 
+            
       - name: Run enterprise tests
         if: ${{ matrix.kind == 'enterprise' }}
         shell: bash -l {0}

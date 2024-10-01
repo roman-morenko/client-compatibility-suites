@@ -111,14 +111,14 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: server-os-logs_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java-distribution }}_${{ matrix.java-version }}_${{ matrix.server-version }}
+          name: server-os-logs_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
           path: client/hazelcast-java-client/target
 
       - name: "Archive ent results"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: server-ent-logs_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java-distribution }}_${{ matrix.java-version }}_${{ matrix.server-version }}
+          name: server-ent-logs_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
           path: client/hazelcast-enterprise-java-client/target
           
           

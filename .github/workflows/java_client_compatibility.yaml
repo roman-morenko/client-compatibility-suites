@@ -98,23 +98,39 @@ jobs:
           ./mvnw -B -V -e test -Pintegration-tests -Djdk.version=17 -Dtest.hazelcast-server.version=${{ matrix.server-version }}
         working-directory: client/hazelcast-enterprise-java-client
 
-      - name: Upload Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jvm-logs
-          path: home/runner/work/client-compatibility-suites/client-compatibility-suites/client/hazelcast-enterprise-java-client/
-
-      - name: "Archive os results"
+      - name: "Archive results"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: server-os-logs_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
-          path: client/hazelcast-java-client/target
-
-      - name: "Archive ent results"
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: server-ent-logs_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
+          name: results_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
           path: client/hazelcast-enterprise-java-client/target
+          
+      - name: Run enterprise tests2
+        if: ${{ matrix.kind == 'enterprise' }}
+        shell: bash -l {0}
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -V -e test -Pintegration-tests -Djdk.version=17 -Dtest.hazelcast-server.version=${{ matrix.server-version }}
+        working-directory: client/hazelcast-enterprise-java-client
+
+      - name: "Archive results2"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results2_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
+          path: client/hazelcast-enterprise-java-client/target  
+          
+      - name: Run enterprise tests3
+        if: ${{ matrix.kind == 'enterprise' }}
+        shell: bash -l {0}
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -V -e test -Pintegration-tests -Djdk.version=17 -Dtest.hazelcast-server.version=${{ matrix.server-version }}
+        working-directory: client/hazelcast-enterprise-java-client
+
+      - name: "Archive results3"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results3_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
+          path: client/hazelcast-enterprise-java-client/target           

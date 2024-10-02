@@ -20,7 +20,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
           python-version: 3.9
 
@@ -37,14 +37,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        server-version: ["5.5.0"]
+        server-version: ["5.4.0"]
         kind: [ enterprise ]
         os: [ ubuntu-latest ]
         java: [
-                { version: 17.0.09+9, distribution: semeru },
-                { version: 17.0.09+9, distribution: adopt-openj9 },   
-                { version: 17.0.12+9, distribution: semeru },
-                { version: 17.0.12+9, distribution: adopt-openj9 }
+                { version: 17.0.12+7, distribution: adopt-openj9 }
         ]
 
     name: Test Java client ${{ github.event.inputs.branch_name }} branch against ${{ matrix.kind }} ${{ matrix.server-version }} server on ${{ matrix.os }} and JVM ${{ matrix.java.version }} ${{ matrix.java.distribution }}
@@ -73,7 +70,6 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-
       - name: Check Server Version to Determine License Version
         uses: madhead/semver-utils@latest
         id: version
@@ -93,7 +89,7 @@ jobs:
           ./mvnw -B -V -e clean install -Pintegration-tests -DskipTests -Djdk.version=17 -Dtest.hazelcast-server.version=${{ matrix.server-version }}
         working-directory: client/hazelcast-java-client
 
-            
+
       - name: Run enterprise tests
         if: ${{ matrix.kind == 'enterprise' }}
         shell: bash -l {0}
@@ -101,28 +97,24 @@ jobs:
           chmod +x mvnw
           ./mvnw -B -V -e test -Pintegration-tests -Djdk.version=17 -Dtest.hazelcast-server.version=${{ matrix.server-version }}
         working-directory: client/hazelcast-enterprise-java-client
-    
-      - name: "Upload Artifacts"
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: artifacts_${{ github.event.repository.updated_at}}_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
-          path: client/hazelcast-enterprise-java-client/target 
-      
-      - name: Run enterprise tests2
-        if: ${{ matrix.kind == 'enterprise' }}
-        shell: bash -l {0}
-        run: |
-          chmod +x mvnw
-          ./mvnw -B -V -e test -Pintegration-tests -Djdk.version=17 -Dtest.hazelcast-server.version=${{ matrix.server-version }}
-        working-directory: client/hazelcast-enterprise-java-client
-    
-      - name: "Upload Artifacts2"
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: artifacts_${{ github.event.repository.updated_at}}_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
-          path: client/hazelcast-enterprise-java-client/target 
 
-                
-          
+      - name: Upload Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jvm-logs
+          path: home/runner/work/client-compatibility-suites/client-compatibility-suites/client/hazelcast-enterprise-java-client/
+
+      - name: "Archive os results"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: server-os-logs_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
+          path: client/hazelcast-java-client/target
+
+      - name: "Archive ent results"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: server-ent-logs_${{ matrix.kind }}_${{ matrix.os }}_${{ matrix.java.version }}_${{ matrix.java.distribution }}_${{ matrix.server-version }}
+          path: client/hazelcast-enterprise-java-client/target
